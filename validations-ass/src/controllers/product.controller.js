@@ -37,8 +37,32 @@ router.post(
     }
     return true;
   }),
+
+
+  body("email").custom(async (value) => {
+    // value = a@a.com
+    const isEmail = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,20}$/.test(value);
+    const listOfDomains = ["gmail.com","yahoo.com"]
+    const email = value.split("@")
+    if(!listOfDomains.includes(email[1])){
+      throw new Error("We do not accept emails from this domain");
+    }
+    if (!isEmail) {
+      throw new Error("Please enter a proper email address");
+    }
+    const productByEmail = await Product.findOne({ email: value })
+      .lean()
+      .exec();
+    if (productByEmail) {
+      throw new Error("Please try with a different email address");
+    }
+    return true;
+  }),
+
+
+
   async (req, res) => {
-      console.log(body("name"));
+      // console.log(body("name"));
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       let newErrors = errors.array().map(({ msg, param, location }) => {
